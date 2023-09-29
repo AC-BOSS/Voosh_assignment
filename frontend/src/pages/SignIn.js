@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import {Link as Link2} from 'react-router-dom';
+import {Link as Link2, useNavigate} from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -32,6 +32,7 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -42,26 +43,16 @@ export default function SignIn() {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body:JSON.stringify({email, password})
         })
         const data = await response.json();
         if(response.ok) {
-            sessionStorage.setItem("accessToken", data.accessToken);
-            // navigate("/");
+            navigate("/");
         } else {
             window.alert(data);
-            // console.log(data);
         }
     };
-
-    // const googleAuth = async(event) => {
-    //     await fetch(`${process.env.REACT_APP_BACKEND_URL}/user/auth/google`, {
-    //         method: "GET",
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     })
-    // }
 
   return (
     <ThemeProvider theme={defaultTheme}>

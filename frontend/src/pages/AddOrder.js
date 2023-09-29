@@ -35,10 +35,15 @@ export default function AddOrder() {
     const navigate = useNavigate();
     const [subTotal, setSubTotal] = useState("");
     const [phone, setPhone] = useState("");
-    
+
+    function getCookie(key) {
+        var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+        return b ? b.pop() : "";
+    }
+
     const handleSubmit = async(event) => {
         event.preventDefault();
-        const accessToken = sessionStorage.getItem("accessToken");
+        const accessToken = getCookie("accessToken");
         if(!accessToken) {
             navigate("/login");
         }

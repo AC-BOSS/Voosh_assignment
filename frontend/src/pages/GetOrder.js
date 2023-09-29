@@ -13,9 +13,15 @@ export default function GetOrder() {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
 
+    function getCookie(key) {
+        var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+        return b ? b.pop() : "";
+    }
+
     useEffect(() => {
         async function getOrders(){
-            const accessToken = sessionStorage.getItem("accessToken");
+            const accessToken = getCookie('accessToken');
+            console.log(accessToken);
             if(!accessToken) {
                 navigate("/login");
             }

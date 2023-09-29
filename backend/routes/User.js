@@ -29,6 +29,9 @@ router.post("/add-user", async(req, res) => {
 
 router.post("/login-user", async(req, res) => {
     const {email, password} = req.body;
+    if (!password) {
+        return res.status(400).json("Password not provided");
+    }
     try {
         const user = await User.findOne({ email: email });
         if(!user) {
@@ -39,26 +42,36 @@ router.post("/login-user", async(req, res) => {
             return res.status(403).json("wrong password");
         }
         const accessToken = jwt.sign({user}, process.env.JWT_SECRET, {expiresIn:"1d"});
-        res.json({accessToken: "Bearer "+accessToken});
+        res.cookie('accessToken', accessToken, { expires: new Date(Date.now() + 24*3600000) });
+        res.json("Successfully Logged In");
     } catch (err) {
         console.log(err);
         res.status(500).json(err)
     }
 });
 
-router.get('/auth/google', passport.authenticate('google', { scope: ['email'] }));
+router.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
 
 router.get('/auth/google/callback', (req, res, next) => {
-    passport.authenticate('google', (err, user) => {
-        // res.redirect('/login');
+    passport.authenticate('google', async(err, user) => {
         if (err) return next(err);
-        console.log(user)
-        return res.json(user)
-        if (!user) return res.redirect('/login'); // Handle authentication failure
-        
-        // Create a JWT token and send it to the client
-        // const accessToken = jwt.sign({user}, process.env.JWT_SECRET, {expiresIn:"1d"});
-        // return res.json({ accessToken: "Bearer "+accessToken });
+        try {
+            const email = user.emails[0].value;
+            const name = user.displayName;
+
+            existing_user = await User.findOne({ email: email });
+
+            if(!existing_user) {
+                existing_user = new User({email, name});
+                await existing_user.save()
+            }
+            console.log()
+            const accessToken = jwt.sign({user: existing_user}, process.env.JWT_SECRET, {expiresIn:"1d"});
+            res.cookie('accessToken', accessToken);
+            res.redirect('http://localhost:3000/');
+        } catch (error) {
+            res.redirect('http://localhost:3000/login');
+        }
     })(req, res, next);
 })
 
